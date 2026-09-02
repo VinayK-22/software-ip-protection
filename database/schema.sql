@@ -1,27 +1,9 @@
 -- ============================================================
--- PRUTVYP1
+
 -- Software & Application IP Protection System
 -- MySQL-Optimized Database Schema
--- ============================================================
--- Changes vs original:
---   1. ENGINE=InnoDB + charset explicitly set per table (guarantees
---      FK enforcement even if a server default engine differs;
---      MyISAM silently ignores FOREIGN KEY clauses).
---   2. Removed indexes that duplicated indexes InnoDB creates
---      automatically for FK columns, or that were already covered
---      by the leftmost prefix of an existing UNIQUE key
---      (idx_authorities_jurisdiction, idx_sources_jurisdiction,
---      idx_sources_authority, idx_requirements_jurisdiction,
---      idx_requirements_category, idx_requirements_authority,
---      idx_project_requirements_project,
---      idx_project_requirements_requirement,
---      idx_project_documents_project). Fewer redundant indexes
---      = faster INSERT/UPDATE/DELETE, less disk/memory use.
---   3. Replaced them with composite indexes that actually match
---      likely query patterns (jurisdiction+category lookups,
---      jurisdiction+source type lookups, project+status lookups).
---   4. Added a CHECK constraint so effective_to can't precede
---      effective_from (MySQL 8.0.16+).
+
+
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS software_ip_protection
