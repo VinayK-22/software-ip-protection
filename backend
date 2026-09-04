@@ -1,0 +1,370 @@
+"""
+PRUTVYP1 - Software & Application IP Protection
+Backend API for managing software projects and IP protection requirements.
+"""
+
+import sqlite3
+from contextlib import asynccontextmanager, contextmanager
+from pathlib import Path
+from typing import Optional
+
+from fastapi import Depends, FastAPI, HTTPException
+from pydantic import BaseModel, ConfigDict
+
+DATABASE = Path("prutvyp1.db")
+
+
+# ============================================================
+# DATABASE CONNECTION / INITIALIZATION
+# ============================================================
+
+@contextmanager
+def get_db():
+    """
+    Yields a connection and guarantees it is closed and either
+    committed or rolled back, even if an exception is raised.
+    Use as a FastAPI dependency: db: sqlite3.Connection = Depends(get_db)
+    """
+    connection = sqlite3.connect(DATABASE)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA foreign_keys = ON")
+    try:
+        yield connection
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
+def initialize_database() -> None:
+    """Creates required tables and indexes if they don't already exist."""
+    with get_db() as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS applications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                application_name TEXT NOT NULL,
+                description TEXT,
+                owner_name TEXT NOT NULL,
+                country TEXT NOT NULL,
+                application_type TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS ip_requirements (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ip_type TEXT NOT NULL,
+                requirement TEXT NOT NULL,
+                description TEXT,
+                country TEXT
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS protection_recommendations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                application_id INTEGER NOT NULL,
+                ip_type TEXT NOT NULL,
+                recommendation TEXT NOT NULL,
+                reason TEXT,
+                FOREIGN KEY (application_id)
+                    REFERENCES applications(id)
+                    ON DELETE CASCADE
+            )
+        """)
+
+        # Indexes: every lookup/join in this file filters or joins on
+        # these columns, and none of them were indexed before.
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_recommendations_app_id
+            ON protection_recommendations(application_id)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_ip_requirements_country
+            ON ip_requirements(country)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_ip_requirements_type
+            ON ip_requirements(ip_type)
+        """)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Runs once at startup instead of at import time — the old
+    # module-level initialize_database() call fired even during
+    # tests or tooling that merely imported this file.
+    initialize_database()
+    yield
+
+
+app = FastAPI(
+    title="PRUTVYP1 - Software & Application IP Protection",
+    description="Backend API for managing software projects and IP protection requirements.",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+
+# ============================================================
+# PYDANTIC MODELS
+# ============================================================
+
+class ApplicationCreate(BaseModel):
+    application_name: str
+    description: Optional[str] = None
+    owner_name: str
+    country: str
+    application_type: str
+
+
+class ApplicationResponse(ApplicationCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    created_at: Optional[str] = None
+
+
+class RecommendationCreate(BaseModel):
+    ip_type: str
+    recommendation: str
+    reason: Optional[str] = None
+
+
+class RecommendationResponse(RecommendationCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    application_id: int
+
+
+# ============================================================
+# SHARED HELPERS
+# ============================================================
+
+def get_application_or_404(cursor: sqlite3.Cursor, application_id: int) -> sqlite3.Row:
+    """
+    Every endpoint below needs this exact "does the application
+    exist" check — pulled out once instead of repeated four times.
+    """
+    cursor.execute("SELECT * FROM applications WHERE id = ?", (application_id,))
+    application = cursor.fetchone()
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application not found")
+    return application
+
+
+# Rule table for analyze_application(): each old "if any keyword in
+# text" block was identical in shape, just with different keywords
+# and messages. Expressing that shape as data instead of four
+# copy-pasted if-blocks makes adding a fifth IP type a one-line change.
+IP_RULES: list[dict] = [
+    {
+        "keywords": ("software", "application", "source code", "code"),
+        "ip_type": "Copyright",
+        "recommendation": "Consider copyright protection for the source code and software documentation.",
+        "reason": "The application contains original software code.",
+    },
+    {
+        "keywords": ("brand", "name", "logo", "platform"),
+        "ip_type": "Trademark",
+        "recommendation": "Consider trademark protection for the application name, brand and logo.",
+        "reason": "The project may contain brand-identifying elements.",
+    },
+    {
+        "keywords": ("algorithm", "technical solution", "technical innovation", "invention"),
+        "ip_type": "Patent",
+        "recommendation": "Consider consulting a patent professional regarding patent eligibility.",
+        "reason": "The application may contain a potentially innovative technical solution.",
+    },
+    {
+        "keywords": ("confidential", "proprietary", "secret", "internal"),
+        "ip_type": "Trade Secret",
+        "recommendation": "Consider protecting confidential algorithms, processes or business information as trade secrets.",
+        "reason": "The project appears to contain confidential or proprietary information.",
+    },
+]
+
+DEFAULT_RECOMMENDATION = {
+    "ip_type": "General IP Review",
+    "recommendation": "Perform a detailed intellectual property review of the software.",
+    "reason": "The available information is insufficient to identify a specific protection mechanism.",
+}
+
+
+def build_recommendations(application: sqlite3.Row) -> list[dict]:
+    text = " ".join([
+        application["application_name"],
+        application["description"] or "",
+        application["application_type"],
+    ]).lower()
+
+    matches = [
+        {"ip_type": rule["ip_type"], "recommendation": rule["recommendation"], "reason": rule["reason"]}
+        for rule in IP_RULES
+        if any(keyword in text for keyword in rule["keywords"])
+    ]
+    return matches or [DEFAULT_RECOMMENDATION]
+
+
+# ============================================================
+# ROOT / HEALTH
+# ============================================================
+
+@app.get("/")
+def root():
+    return {
+        "project": "PRUTVYP1",
+        "name": "Software & Application IP Protection System",
+        "status": "running",
+        "version": "1.0.0",
+    }
+
+
+@app.get("/health")
+def health_check(db: sqlite3.Connection = Depends(get_db)):
+    try:
+        db.execute("SELECT 1")
+        return {"status": "healthy", "database": "connected"}
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Database connection failed: {error}")
+
+
+# ============================================================
+# APPLICATION APIs
+# ============================================================
+
+@app.post("/applications", status_code=201)
+def create_application(application: ApplicationCreate, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    cursor.execute("""
+        INSERT INTO applications (application_name, description, owner_name, country, application_type)
+        VALUES (?, ?, ?, ?, ?)
+    """, (
+        application.application_name,
+        application.description,
+        application.owner_name,
+        application.country,
+        application.application_type,
+    ))
+    return {"message": "Application registered successfully", "application_id": cursor.lastrowid}
+
+
+@app.get("/applications")
+def get_applications(
+    limit: int = 50,
+    offset: int = 0,
+    db: sqlite3.Connection = Depends(get_db),
+):
+    # Unbounded SELECT * with no LIMIT was the old behavior; it would
+    # return every row in the table on every call. Paginated by default.
+    cursor = db.cursor()
+    cursor.execute(
+        "SELECT * FROM applications ORDER BY id DESC LIMIT ? OFFSET ?",
+        (limit, offset),
+    )
+    return [dict(row) for row in cursor.fetchall()]
+
+
+@app.get("/applications/{application_id}")
+def get_application(application_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    return dict(get_application_or_404(cursor, application_id))
+
+
+@app.delete("/applications/{application_id}")
+def delete_application(application_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    get_application_or_404(cursor, application_id)
+    cursor.execute("DELETE FROM applications WHERE id = ?", (application_id,))
+    return {"message": "Application deleted successfully"}
+
+
+# ============================================================
+# IP REQUIREMENTS
+# ============================================================
+
+@app.get("/ip-requirements")
+def get_ip_requirements(
+    country: Optional[str] = None,
+    ip_type: Optional[str] = None,
+    db: sqlite3.Connection = Depends(get_db),
+):
+    query = "SELECT * FROM ip_requirements WHERE 1 = 1"
+    parameters: list = []
+
+    if country:
+        query += " AND (country = ? OR country IS NULL)"
+        parameters.append(country)
+    if ip_type:
+        query += " AND ip_type = ?"
+        parameters.append(ip_type)
+
+    query += " ORDER BY id"
+
+    cursor = db.cursor()
+    cursor.execute(query, parameters)
+    return [dict(row) for row in cursor.fetchall()]
+
+
+# ============================================================
+# RECOMMENDATIONS
+# ============================================================
+
+@app.post("/applications/{application_id}/recommendations", status_code=201)
+def create_recommendation(
+    application_id: int,
+    recommendation: RecommendationCreate,
+    db: sqlite3.Connection = Depends(get_db),
+):
+    cursor = db.cursor()
+    get_application_or_404(cursor, application_id)
+
+    cursor.execute("""
+        INSERT INTO protection_recommendations (application_id, ip_type, recommendation, reason)
+        VALUES (?, ?, ?, ?)
+    """, (application_id, recommendation.ip_type, recommendation.recommendation, recommendation.reason))
+
+    return {"message": "Recommendation created successfully", "recommendation_id": cursor.lastrowid}
+
+
+@app.get("/applications/{application_id}/recommendations")
+def get_recommendations(application_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    get_application_or_404(cursor, application_id)
+
+    cursor.execute(
+        "SELECT * FROM protection_recommendations WHERE application_id = ? ORDER BY id",
+        (application_id,),
+    )
+    return [dict(row) for row in cursor.fetchall()]
+
+
+@app.post("/applications/{application_id}/analyze")
+def analyze_application(application_id: int, db: sqlite3.Connection = Depends(get_db)):
+    """Rule-based (non-AI) IP analysis, driven by IP_RULES above."""
+    cursor = db.cursor()
+    application = get_application_or_404(cursor, application_id)
+    recommendations = build_recommendations(application)
+
+    cursor.execute("DELETE FROM protection_recommendations WHERE application_id = ?", (application_id,))
+    cursor.executemany("""
+        INSERT INTO protection_recommendations (application_id, ip_type, recommendation, reason)
+        VALUES (:application_id, :ip_type, :recommendation, :reason)
+    """, [{**item, "application_id": application_id} for item in recommendations])
+
+    return {
+        "application_id": application_id,
+        "application_name": application["application_name"],
+        "country": application["country"],
+        "analysis_type": "Rule-based Python analysis",
+        "recommendations": recommendations,
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
