@@ -1,1152 +1,947 @@
-```sql
-USE software_ip_protection;
+-- ============================================================
+-- PRUTVYP1
+-- Software Intellectual Property Protection System
+-- IP Requirements Seed Data - SQLite
+-- ============================================================
+
+PRAGMA foreign_keys = ON;
 
 
 -- ============================================================
--- Authorities
+-- 1. REGIONS
 -- ============================================================
 
-INSERT INTO authorities
-(
-    jurisdiction_id,
-    authority_name,
-    authority_abbreviation,
-    official_website,
-    description
-)
+INSERT OR IGNORE INTO regions
+    (region_name, country_code)
 VALUES
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    'Copyright Office, Government of India',
-    'Copyright Office',
-    'https://copyright.gov.in/',
-    'Authority responsible for copyright registration and administration in India.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    'Office of the Controller General of Patents, Designs and Trade Marks',
-    'CGPDTM',
-    'https://ipindia.gov.in/',
-    'Indian authority responsible for patents, designs and trademarks.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    'United States Copyright Office',
-    'USCO',
-    'https://www.copyright.gov/',
-    'United States authority responsible for copyright registration and related administration.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    'United States Patent and Trademark Office',
-    'USPTO',
-    'https://www.uspto.gov/',
-    'United States authority responsible for patents and trademarks.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    'European Patent Office',
-    'EPO',
-    'https://www.epo.org/',
-    'Authority responsible for the European patent system.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    'European Union Intellectual Property Office',
-    'EUIPO',
-    'https://www.euipo.europa.eu/',
-    'EU agency responsible for EU trade marks and registered EU designs.'
-);
+    ('India', 'IN'),
+    ('USA', 'US'),
+    ('Europe', 'EU');
 
 
 -- ============================================================
--- Sources - India
+-- 2. IP TYPES
 -- ============================================================
 
-INSERT INTO sources
-(
-    jurisdiction_id,
-    authority_id,
-    source_title,
-    source_type,
-    source_url,
-    last_reviewed_date,
-    description
-)
+INSERT OR IGNORE INTO ip_types
+    (ip_type_name, description)
 VALUES
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
     (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'Copyright Office'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'IN'
-        )
+        'Copyright',
+        'Protection for original software code and other copyrightable expression.'
     ),
-    'Copyright Registration Online Filing Instructions',
-    'REGISTRATION_PORTAL',
-    'https://copyright.gov.in/UserRegistration/frmLoginPage.aspx',
-    '2026-09-01',
-    'Official instructions for online copyright registration, including software works.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
     (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'CGPDTM'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'IN'
-        )
+        'Patent',
+        'Protection for eligible inventions that satisfy the applicable patentability requirements.'
     ),
-    'Patent Resources and Guidelines',
-    'GUIDELINE',
-    'https://ipindia.gov.in/resource/patents-resources-guidelines',
-    '2026-09-01',
-    'Official patent guidelines and resources published by IP India.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
     (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'CGPDTM'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'IN'
-        )
+        'Trademark',
+        'Protection for names, logos, symbols, or other marks identifying goods or services.'
     ),
-    'Patents Act 1970 - Section 3',
-    'LAW',
-    'https://ipindia.gov.in/acts/patent-act-1970/section-3',
-    '2026-09-01',
-    'Official text of Section 3 of the Indian Patents Act, including Section 3(k).'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
     (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'CGPDTM'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'IN'
-        )
-    ),
-    'Trademark Filing Process',
-    'REGISTRATION_PORTAL',
-    'https://ipindia.gov.in/application-workflow/trademark-filing-process',
-    '2026-09-01',
-    'Official trademark filing process published by IP India.'
-);
+        'Trade Secret',
+        'Protection based on maintaining qualifying confidential information through appropriate secrecy measures.'
+    );
 
 
 -- ============================================================
--- Sources - USA
+-- 3. INDIA - COPYRIGHT
 -- ============================================================
 
-INSERT INTO sources
+INSERT INTO ip_requirements
 (
-    jurisdiction_id,
-    authority_id,
-    source_title,
-    source_type,
-    source_url,
-    last_reviewed_date,
-    description
-)
-VALUES
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'USCO'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'US'
-        )
-    ),
-    'Circular 61 - Copyright Registration of Computer Programs',
-    'GUIDELINE',
-    'https://copyright.gov/circs/',
-    '2026-09-01',
-    'Official U.S. Copyright Office guidance concerning registration of computer programs.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'USCO'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'US'
-        )
-    ),
-    'Computer Programs',
-    'OFFICIAL_WEBSITE',
-    'https://www.copyright.gov/register/tx-programs.html',
-    '2026-09-01',
-    'Official information about copyright protection for computer programs.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'USPTO'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'US'
-        )
-    ),
-    'Patent Essentials',
-    'OFFICIAL_WEBSITE',
-    'https://www.uspto.gov/patents/basics/essentials',
-    '2026-09-01',
-    'Official USPTO patent eligibility and patent basics information.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'USPTO'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'US'
-        )
-    ),
-    'How to Apply for a Patent',
-    'REGISTRATION_PORTAL',
-    'https://www.uspto.gov/patents/basics/patent-process-overview',
-    '2026-09-01',
-    'Official USPTO patent application process.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'USPTO'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'US'
-        )
-    ),
-    'Trademark Basics',
-    'OFFICIAL_WEBSITE',
-    'https://www.uspto.gov/trademarks/basics',
-    '2026-09-01',
-    'Official USPTO trademark requirements and registration information.'
-);
-
-
--- ============================================================
--- Sources - Europe
--- ============================================================
-
-INSERT INTO sources
-(
-    jurisdiction_id,
-    authority_id,
-    source_title,
-    source_type,
-    source_url,
-    last_reviewed_date,
-    description
-)
-VALUES
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    NULL,
-    'Directive 2009/24/EC on the Legal Protection of Computer Programs',
-    'LAW',
-    'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32009L0024',
-    '2026-09-01',
-    'EU legal framework for copyright protection of computer programs.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'EPO'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'EU'
-        )
-    ),
-    'Patentability of Digital Inventions',
-    'GUIDELINE',
-    'https://www.epo.org/en/news-events/in-focus/digital-innovations/patentability-digital-inventions',
-    '2026-09-01',
-    'EPO guidance concerning patentability of software and digital inventions.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'EPO'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'EU'
-        )
-    ),
-    'EPC Guidelines - Computer-Implemented Inventions',
-    'GUIDELINE',
-    'https://www.epo.org/en/legal/guidelines-epc/2026/f_iv_3_9.html',
-    '2026-09-01',
-    'EPO examination guidance for claims relating to computer-implemented inventions.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'EPO'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'EU'
-        )
-    ),
-    'EPC Guidelines - Programs for Computers',
-    'GUIDELINE',
-    'https://www.epo.org/en/legal/guidelines-epc/2026/g_ii_3_6.html',
-    '2026-09-01',
-    'EPO guidance concerning computer programs and technical character.'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (
-        SELECT authority_id
-        FROM authorities
-        WHERE authority_abbreviation = 'EUIPO'
-        AND jurisdiction_id = (
-            SELECT jurisdiction_id
-            FROM jurisdictions
-            WHERE jurisdiction_code = 'EU'
-        )
-    ),
-    'European Union Intellectual Property Office',
-    'OFFICIAL_WEBSITE',
-    'https://www.euipo.europa.eu/',
-    '2026-09-01',
-    'Official EUIPO information concerning EU intellectual property rights.'
-);
-
-
--- ============================================================
--- INDIA REQUIREMENTS
--- ============================================================
-
-INSERT INTO requirements
-(
-    jurisdiction_id,
-    category_id,
-    authority_id,
-    requirement_code,
-    requirement_name,
-    description,
-    requirement_type,
-    applicability,
-    priority
-)
-VALUES
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'Copyright Office'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-CR-001',
-    'Complete Form XIV',
-    'Complete the prescribed Form XIV for copyright registration.',
-    'REGISTRATION',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'Copyright Office'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-CR-002',
-    'Prepare Statement of Particulars',
-    'Provide the required Statement of Particulars as part of the copyright registration process.',
-    'DOCUMENT',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'Copyright Office'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-CR-003',
-    'Prepare Statement of Further Particulars',
-    'Provide the Statement of Further Particulars for software and other applicable works.',
-    'DOCUMENT',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'Copyright Office'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-CR-004',
-    'Prepare Software Source Code Deposit',
-    'Prepare the software work for submission in the format and source-code form specified by the Copyright Office.',
-    'DOCUMENT',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'Copyright Office'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-CR-005',
-    'Upload Supporting Documents',
-    'Prepare signatures, work and other documents required for online submission.',
-    'DOCUMENT',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'CGPDTM'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-PT-001',
-    'Check Patent Eligibility',
-    'Determine whether the claimed invention satisfies applicable Indian patentability requirements.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'CGPDTM'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-PT-002',
-    'Check Section 3(k)',
-    'Determine whether the software-related invention falls within the exclusions applicable to mathematical methods, business methods, computer programmes per se or algorithms.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'CGPDTM'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-PT-003',
-    'Assess Technical Contribution',
-    'Assess whether the computer-related invention provides the technical contribution required under the applicable examination framework.',
-    'ELIGIBILITY',
-    'CONDITIONAL',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'TRADEMARK'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'CGPDTM'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-TM-001',
-    'Search Existing Trademarks',
-    'Search existing marks before filing to identify potentially conflicting trademarks.',
-    'PROCEDURE',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'TRADEMARK'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'CGPDTM'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-TM-002',
-    'Select Nice Classification',
-    'Identify the appropriate goods or services class for the software or related service.',
-    'FILING',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'TRADEMARK'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'CGPDTM'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'IN')),
-    'IN-TM-003',
-    'Prepare TM-A Application',
-    'Prepare the applicable trademark application and applicant information.',
-    'FILING',
-    'MANDATORY',
-    'HIGH'
-);
-
-
--- ============================================================
--- USA REQUIREMENTS
--- ============================================================
-
-INSERT INTO requirements
-(
-    jurisdiction_id,
-    category_id,
-    authority_id,
-    requirement_code,
-    requirement_name,
-    description,
-    requirement_type,
-    applicability,
-    priority
-)
-VALUES
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USCO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-CR-001',
-    'Identify Copyrightable Computer Program',
-    'Determine whether the software contains copyrightable expression within the scope of computer program protection.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USCO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-CR-002',
-    'Prepare Copyright Application',
-    'Prepare the copyright registration application for the computer program.',
-    'REGISTRATION',
-    'CONDITIONAL',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USCO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-CR-003',
-    'Prepare Required Deposit Material',
-    'Prepare the identifying portions or other deposit material required for computer program registration.',
-    'DOCUMENT',
-    'CONDITIONAL',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USCO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-CR-004',
-    'Identify Author and Claimant',
-    'Record the relevant author and copyright claimant information.',
-    'OWNERSHIP',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USPTO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-PT-001',
-    'Check Patent Eligibility',
-    'Determine whether the software-related invention falls within eligible patent subject matter.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USPTO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-PT-002',
-    'Assess Utility',
-    'Determine whether the claimed invention has a useful and operative purpose.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USPTO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-PT-003',
-    'Assess Novelty',
-    'Assess whether the claimed invention is new in view of applicable prior art.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USPTO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-PT-004',
-    'Assess Non-Obviousness',
-    'Assess whether the claimed invention would have been obvious to a person having ordinary skill in the relevant field.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'TRADEMARK'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USPTO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-TM-001',
-    'Search Existing Trademarks',
-    'Search existing trademark records for potentially conflicting marks.',
-    'PROCEDURE',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'TRADEMARK'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USPTO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-TM-002',
-    'Identify Goods or Services',
-    'Identify and accurately describe the goods or services associated with the mark.',
-    'FILING',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'TRADEMARK'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'USPTO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'US')),
-    'US-TM-003',
-    'Prepare Trademark Application',
-    'Prepare the applicable trademark application and filing information.',
-    'FILING',
-    'MANDATORY',
-    'HIGH'
-);
-
-
--- ============================================================
--- EUROPE REQUIREMENTS
--- ============================================================
-
-INSERT INTO requirements
-(
-    jurisdiction_id,
-    category_id,
-    authority_id,
-    requirement_code,
-    requirement_name,
-    description,
-    requirement_type,
-    applicability,
-    priority
-)
-VALUES
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    NULL,
-    'EU-CR-001',
-    'Identify Protected Computer Program',
-    'Determine whether the software qualifies for copyright protection as a computer program under the applicable EU framework.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    NULL,
-    'EU-CR-002',
-    'Check Originality',
-    'Determine whether the computer program is original in the sense required for copyright protection.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'COPYRIGHT'),
-    NULL,
-    'EU-CR-003',
-    'Identify Author or Rights Holder',
-    'Record the author or applicable rights holder information according to the relevant national framework.',
-    'OWNERSHIP',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'EPO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU')),
-    'EU-PT-001',
-    'Check Technical Character',
-    'Determine whether the computer-implemented invention has technical character.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'EPO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU')),
-    'EU-PT-002',
-    'Assess Further Technical Effect',
-    'Determine whether the software produces a further technical effect beyond the normal interaction between software and computer hardware.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'EPO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU')),
-    'EU-PT-003',
-    'Assess Novelty',
-    'Determine whether the claimed invention is new under the applicable European patent framework.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'EPO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU')),
-    'EU-PT-004',
-    'Assess Inventive Step',
-    'Determine whether the claimed invention involves an inventive step.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'PATENT'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'EPO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU')),
-    'EU-PT-005',
-    'Assess Industrial Applicability',
-    'Determine whether the invention is susceptible of industrial application.',
-    'ELIGIBILITY',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'TRADEMARK'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'EUIPO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU')),
-    'EU-TM-001',
-    'Search Existing EU Trade Marks',
-    'Search existing EU trade marks before filing to identify potential conflicts.',
-    'PROCEDURE',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'TRADEMARK'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'EUIPO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU')),
-    'EU-TM-002',
-    'Identify Goods and Services',
-    'Identify the goods and services for which protection is required using the applicable classification system.',
-    'FILING',
-    'MANDATORY',
-    'HIGH'
-),
-
-(
-    (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU'),
-    (SELECT category_id FROM ip_categories WHERE category_code = 'TRADEMARK'),
-    (SELECT authority_id FROM authorities
-     WHERE authority_abbreviation = 'EUIPO'
-     AND jurisdiction_id = (SELECT jurisdiction_id FROM jurisdictions WHERE jurisdiction_code = 'EU')),
-    'EU-TM-003',
-    'Prepare EU Trade Mark Application',
-    'Prepare the required information and application for EU trade mark protection.',
-    'FILING',
-    'MANDATORY',
-    'HIGH'
-);
-
-
--- ============================================================
--- Requirement to source relationships
--- ============================================================
-
--- India copyright
-
-INSERT INTO requirement_sources (requirement_id, source_id)
-SELECT r.requirement_id, s.source_id
-FROM requirements r
-JOIN sources s
-WHERE r.requirement_code IN
-(
-    'IN-CR-001',
-    'IN-CR-002',
-    'IN-CR-003',
-    'IN-CR-004',
-    'IN-CR-005'
-)
-AND s.source_title = 'Copyright Registration Online Filing Instructions';
-
-
--- India patent
-
-INSERT INTO requirement_sources (requirement_id, source_id)
-SELECT r.requirement_id, s.source_id
-FROM requirements r
-JOIN sources s
-WHERE r.requirement_code IN
-(
-    'IN-PT-001',
-    'IN-PT-002',
-    'IN-PT-003'
-)
-AND s.source_title IN
-(
-    'Patent Resources and Guidelines',
-    'Patents Act 1970 - Section 3'
-);
-
-
--- India trademark
-
-INSERT INTO requirement_sources (requirement_id, source_id)
-SELECT r.requirement_id, s.source_id
-FROM requirements r
-JOIN sources s
-WHERE r.requirement_code IN
-(
-    'IN-TM-001',
-    'IN-TM-002',
-    'IN-TM-003'
-)
-AND s.source_title = 'Trademark Filing Process';
-
-
--- USA copyright
-
-INSERT INTO requirement_sources (requirement_id, source_id)
-SELECT r.requirement_id, s.source_id
-FROM requirements r
-JOIN sources s
-WHERE r.requirement_code IN
-(
-    'US-CR-001',
-    'US-CR-002',
-    'US-CR-003',
-    'US-CR-004'
-)
-AND s.source_title IN
-(
-    'Circular 61 - Copyright Registration of Computer Programs',
-    'Computer Programs'
-);
-
-
--- USA patent
-
-INSERT INTO requirement_sources (requirement_id, source_id)
-SELECT r.requirement_id, s.source_id
-FROM requirements r
-JOIN sources s
-WHERE r.requirement_code IN
-(
-    'US-PT-001',
-    'US-PT-002',
-    'US-PT-003',
-    'US-PT-004'
-)
-AND s.source_title IN
-(
-    'Patent Essentials',
-    'How to Apply for a Patent'
-);
-
-
--- USA trademark
-
-INSERT INTO requirement_sources (requirement_id, source_id)
-SELECT r.requirement_id, s.source_id
-FROM requirements r
-JOIN sources s
-WHERE r.requirement_code IN
-(
-    'US-TM-001',
-    'US-TM-002',
-    'US-TM-003'
-)
-AND s.source_title = 'Trademark Basics';
-
-
--- Europe copyright
-
-INSERT INTO requirement_sources (requirement_id, source_id)
-SELECT r.requirement_id, s.source_id
-FROM requirements r
-JOIN sources s
-WHERE r.requirement_code IN
-(
-    'EU-CR-001',
-    'EU-CR-002',
-    'EU-CR-003'
-)
-AND s.source_title = 'Directive 2009/24/EC on the Legal Protection of Computer Programs';
-
-
--- Europe patent
-
-INSERT INTO requirement_sources (requirement_id, source_id)
-SELECT r.requirement_id, s.source_id
-FROM requirements r
-JOIN sources s
-WHERE r.requirement_code IN
-(
-    'EU-PT-001',
-    'EU-PT-002',
-    'EU-PT-003',
-    'EU-PT-004',
-    'EU-PT-005'
-)
-AND s.source_title IN
-(
-    'Patentability of Digital Inventions',
-    'EPC Guidelines - Computer-Implemented Inventions',
-    'EPC Guidelines - Programs for Computers'
-);
-
-
--- Europe trademark
-
-INSERT INTO requirement_sources (requirement_id, source_id)
-SELECT r.requirement_id, s.source_id
-FROM requirements r
-JOIN sources s
-WHERE r.requirement_code IN
-(
-    'EU-TM-001',
-    'EU-TM-002',
-    'EU-TM-003'
-)
-AND s.source_title = 'European Union Intellectual Property Office';
-
-
--- ============================================================
--- Requirement-document relationships
--- ============================================================
-
-INSERT INTO requirement_documents
-(
-    requirement_id,
-    document_type_id,
-    is_mandatory,
-    description
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
 )
 SELECT
-    r.requirement_id,
-    d.document_type_id,
-    TRUE,
-    'Software source code or applicable source-code material.'
-FROM requirements r
-JOIN document_types d
-WHERE r.requirement_code = 'IN-CR-004'
-AND d.document_code = 'SOURCE_CODE';
+    i.ip_type_id,
+    r.region_id,
+    'Original software expression',
+    'The software should contain original copyrightable expression. Indian copyright law treats computer programmes as literary works.',
+    'Document authorship and ownership of the original source code and other copyrightable software materials.',
+    1,
+    'IP India - Basics of Copyright',
+    'https://ipindia.gov.in/basics-of-copyright'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Copyright'
+  AND r.region_name = 'India';
 
 
-INSERT INTO requirement_documents
+INSERT INTO ip_requirements
 (
-    requirement_id,
-    document_type_id,
-    is_mandatory,
-    description
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
 )
 SELECT
-    r.requirement_id,
-    d.document_type_id,
-    TRUE,
-    'Software description or related work information.'
-FROM requirements r
-JOIN document_types d
-WHERE r.requirement_code IN
-(
-    'IN-CR-002',
-    'IN-CR-003'
-)
-AND d.document_code = 'SOFTWARE_DESCRIPTION';
+    i.ip_type_id,
+    r.region_id,
+    'Software copyright registration',
+    'Copyright exists automatically for qualifying original expression, while registration can provide evidence of the claim.',
+    'Decide whether to register the software copyright and prepare the required application information.',
+    0,
+    'IP India - Filing Process',
+    'https://ipindia.gov.in/pages/copyright/learn/filing-process-step-by-step'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Copyright'
+  AND r.region_name = 'India';
 
 
-INSERT INTO requirement_documents
+INSERT INTO ip_requirements
 (
-    requirement_id,
-    document_type_id,
-    is_mandatory,
-    description
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
 )
 SELECT
-    r.requirement_id,
-    d.document_type_id,
-    TRUE,
-    'Ownership documentation where required.'
-FROM requirements r
-JOIN document_types d
-WHERE r.requirement_code IN
-(
-    'US-CR-004',
-    'EU-CR-003'
-)
-AND d.document_code = 'OWNERSHIP_PROOF';
+    i.ip_type_id,
+    r.region_id,
+    'Source code documentation',
+    'IP India states that a software copyright application requires source-code material according to the applicable filing requirements.',
+    'Prepare the required source-code extract or complete source code, depending on the applicable length and filing requirements.',
+    1,
+    'IP India - Filing Process',
+    'https://ipindia.gov.in/pages/copyright/learn/filing-process-step-by-step'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Copyright'
+  AND r.region_name = 'India';
 
 
 -- ============================================================
--- Verification queries
+-- 4. INDIA - PATENT
 -- ============================================================
 
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
 SELECT
-    r.requirement_code,
-    j.jurisdiction_name,
-    c.category_name,
-    r.requirement_name,
-    r.applicability,
-    r.priority
-FROM requirements r
-JOIN jurisdictions j
-    ON r.jurisdiction_id = j.jurisdiction_id
-JOIN ip_categories c
-    ON r.category_id = c.category_id
-ORDER BY
-    j.jurisdiction_name,
-    c.category_name,
-    r.requirement_code;
+    i.ip_type_id,
+    r.region_id,
+    'Novelty',
+    'A patentable invention must be new and not already anticipated by prior disclosure or prior art.',
+    'Perform a prior-art and patent search before filing and document relevant findings.',
+    1,
+    'IP India - Basics of Patents',
+    'https://ipindia.gov.in/pages/patents/learn/basics-of-patents'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'India';
 
 
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
 SELECT
-    r.requirement_code,
-    r.requirement_name,
-    s.source_title,
-    s.source_url
-FROM requirement_sources rs
-JOIN requirements r
-    ON rs.requirement_id = r.requirement_id
-JOIN sources s
-    ON rs.source_id = s.source_id
-ORDER BY
-    r.requirement_code;
-```
+    i.ip_type_id,
+    r.region_id,
+    'Inventive step',
+    'The invention must involve an inventive step and must not be obvious to a person skilled in the relevant field.',
+    'Document the technical advance or non-obvious contribution of the invention.',
+    1,
+    'IP India - Basics of Patents',
+    'https://ipindia.gov.in/pages/patents/learn/basics-of-patents'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'India';
 
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Industrial applicability',
+    'The invention must be capable of being made or used in an industry.',
+    'Describe the practical industrial application of the invention.',
+    1,
+    'IP India - Basics of Patents',
+    'https://ipindia.gov.in/pages/patents/learn/basics-of-patents'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'India';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Check excluded subject matter',
+    'The invention must not fall within subject matter excluded from patentability under the applicable provisions of Indian patent law.',
+    'Review the invention against the applicable exclusions before proceeding with a patent filing.',
+    1,
+    'IP India - Patents Act, Section 3',
+    'https://ipindia.gov.in/acts/patent-act-1970/section-3'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'India';
+
+
+-- ============================================================
+-- 5. INDIA - TRADEMARK
+-- ============================================================
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Identify the trademark',
+    'Identify the name, logo, symbol, or other mark that will distinguish the software-related goods or services.',
+    'Define the exact trademark representation that will be used commercially.',
+    1,
+    'IP India - Basics of Trademarks',
+    'https://ipindia.gov.in/basics-of-trademarks'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trademark'
+  AND r.region_name = 'India';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Search existing trademarks',
+    'Existing trademarks should be searched to identify potentially conflicting marks.',
+    'Search the Indian trademark database for identical or similar marks before filing.',
+    1,
+    'IP India - Search Existing Trademarks',
+    'https://ipindia.gov.in/trade-marks-before-you-apply-search-existing-trademarks'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trademark'
+  AND r.region_name = 'India';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Select goods or services classes',
+    'Indian trademarks are registered for specified goods or services using the Nice Classification system.',
+    'Identify the correct Nice Classification class or classes for the software business.',
+    1,
+    'IP India - Basics of Trademarks',
+    'https://ipindia.gov.in/basics-of-trademarks'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trademark'
+  AND r.region_name = 'India';
+
+
+-- ============================================================
+-- 6. INDIA - TRADE SECRET
+-- ============================================================
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Identify confidential information',
+    'Identify software-related information whose commercial value depends on it remaining confidential.',
+    'Create an internal inventory of confidential source code, algorithms, models, credentials, designs, processes, or business information.',
+    1,
+    'IP India - IPR Resources',
+    'https://ipindia.gov.in/resource-links/acts-rules-ipr-links'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trade Secret'
+  AND r.region_name = 'India';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Implement confidentiality controls',
+    'Trade-secret protection depends on maintaining confidentiality through appropriate measures.',
+    'Use access controls, confidentiality agreements, restricted repositories, need-to-know access, and appropriate internal security procedures.',
+    1,
+    'IP India - IPR Resources',
+    'https://ipindia.gov.in/resource-links/acts-rules-ipr-links'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trade Secret'
+  AND r.region_name = 'India';
+
+
+-- ============================================================
+-- 7. USA - COPYRIGHT
+-- ============================================================
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Copyrightable software expression',
+    'Copyright protection can cover copyrightable expression embodied in a computer program, but not ideas, program logic, algorithms, systems, methods, or concepts as such.',
+    'Identify and document the original copyrightable expression contained in the software.',
+    1,
+    'U.S. Copyright Office - Computer Programs',
+    'https://www.copyright.gov/register/tx-programs.html'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Copyright'
+  AND r.region_name = 'USA';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Copyright registration',
+    'Registration is available for computer programs through the U.S. Copyright Office.',
+    'Determine whether registration is appropriate and prepare the applicable registration submission.',
+    0,
+    'U.S. Copyright Office - Registration',
+    'https://www.copyright.gov/registration/'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Copyright'
+  AND r.region_name = 'USA';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Identify source code material',
+    'The U.S. Copyright Office specifies deposit requirements for computer programs, including identifying portions of source code.',
+    'Prepare the applicable source-code deposit material according to the current Copyright Office requirements.',
+    1,
+    'U.S. Copyright Office - Circular 61',
+    'https://www.copyright.gov/circs/circ61.pdf'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Copyright'
+  AND r.region_name = 'USA';
+
+
+-- ============================================================
+-- 8. USA - PATENT
+-- ============================================================
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Identify patentable invention',
+    'Determine whether the software-related invention falls within subject matter eligible for patent protection.',
+    'Describe the underlying invention and identify the technical features that may support patent protection.',
+    1,
+    'USPTO - Patent Basics',
+    'https://www.uspto.gov/patents/basics'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'USA';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Prior-art search',
+    'Patent applicants should investigate existing patents and technical disclosures before filing.',
+    'Perform a prior-art search and document potentially relevant patent and non-patent literature.',
+    1,
+    'USPTO - Patent Basics',
+    'https://www.uspto.gov/patents/basics'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'USA';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Prepare patent application',
+    'A patent application must contain the information and documentation required by the applicable U.S. patent process.',
+    'Prepare the specification, claims, drawings where applicable, inventor information, and filing materials.',
+    1,
+    'USPTO - Patents',
+    'https://www.uspto.gov/patents'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'USA';
+
+
+-- ============================================================
+-- 9. USA - TRADEMARK
+-- ============================================================
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Identify the trademark',
+    'A trademark can identify the source of goods or services, including software-related offerings.',
+    'Define the name, logo, symbol, or other mark that will identify the software goods or services.',
+    1,
+    'USPTO - Trademark Basics',
+    'https://www.uspto.gov/trademarks/basics'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trademark'
+  AND r.region_name = 'USA';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Search for conflicting marks',
+    'A search for existing marks helps identify potential conflicts before filing.',
+    'Search the USPTO trademark database for identical and similar marks.',
+    1,
+    'USPTO - Trademarks',
+    'https://www.uspto.gov/trademarks'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trademark'
+  AND r.region_name = 'USA';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Prepare goods and services description',
+    'Trademark protection is tied to the goods and services identified in the application.',
+    'Define the software-related goods and services accurately before filing.',
+    1,
+    'USPTO - Trademark Basics',
+    'https://www.uspto.gov/trademarks/basics'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trademark'
+  AND r.region_name = 'USA';
+
+
+-- ============================================================
+-- 10. USA - TRADE SECRET
+-- ============================================================
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Identify economically valuable secret information',
+    'A trade secret must have actual or potential independent economic value because it is not generally known.',
+    'Identify confidential software information that provides economic or competitive value because it is not generally known.',
+    1,
+    'USPTO - Trade Secret Policy',
+    'https://www.uspto.gov/ip-policy/trade-secret-policy'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trade Secret'
+  AND r.region_name = 'USA';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Maintain reasonable secrecy measures',
+    'U.S. trade-secret protection requires reasonable efforts to maintain the information as secret.',
+    'Implement access restrictions, confidentiality agreements, security controls, monitoring, and need-to-know procedures.',
+    1,
+    'USPTO - Trade Secret Policy',
+    'https://www.uspto.gov/ip-policy/trade-secret-policy'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trade Secret'
+  AND r.region_name = 'USA';
+
+
+-- ============================================================
+-- 11. EUROPE - COPYRIGHT
+-- ============================================================
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Original software expression',
+    'Copyright protection applies to original expression, including software, across the EU, subject to applicable national laws.',
+    'Identify and document the original software expression and establish ownership/authorship records.',
+    1,
+    'EUIPO - Copyright Knowledge Centre',
+    'https://www.euipo.europa.eu/en/copyright-knowledge-centre'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Copyright'
+  AND r.region_name = 'Europe';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Determine applicable national copyright framework',
+    'There is no single unified EU copyright title; copyright protection operates under the national laws of EU Member States within the harmonised EU framework.',
+    'Identify the EU Member State laws relevant to the software activity, ownership, distribution, or enforcement scenario.',
+    1,
+    'EUIPO - Copyright Knowledge Centre',
+    'https://www.euipo.europa.eu/en/copyright-knowledge-centre'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Copyright'
+  AND r.region_name = 'Europe';
+
+
+-- ============================================================
+-- 12. EUROPE - PATENT
+-- ============================================================
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Novelty',
+    'Under the European Patent Convention, an invention must be new and not previously made available to the public.',
+    'Perform a prior-art search and assess whether the invention is new before filing.',
+    1,
+    'European Patent Office - Is it patentable?',
+    'https://www.epo.org/en/new-to-patents/is-it-patentable'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'Europe';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Inventive step',
+    'The invention must involve an inventive step and must not be obvious to a person skilled in the relevant technical field.',
+    'Document the technical contribution and why the invention is not obvious based on the relevant prior art.',
+    1,
+    'European Patent Office - Is it patentable?',
+    'https://www.epo.org/en/new-to-patents/is-it-patentable'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'Europe';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Industrial applicability',
+    'An invention must be capable of industrial application under the European Patent Convention.',
+    'Describe the practical technical application of the invention.',
+    1,
+    'European Patent Office - Is it patentable?',
+    'https://www.epo.org/en/new-to-patents/is-it-patentable'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'Europe';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Technical character for software',
+    'Computer programs claimed as such are excluded, but computer programs producing a further technical effect can qualify for patent protection.',
+    'Identify and document the technical effect or technical contribution produced by the software implementation.',
+    1,
+    'European Patent Office - Programs for Computers',
+    'https://www.epo.org/en/legal/guidelines-epc/2026/g_ii_3_6.html'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Patent'
+  AND r.region_name = 'Europe';
+
+
+-- ============================================================
+-- 13. EUROPE - TRADEMARK
+-- ============================================================
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Identify the EU trade mark',
+    'An EU trade mark can distinguish goods or services from those of other businesses.',
+    'Define the name, logo, symbol, or other sign that will identify the software goods or services.',
+    1,
+    'EUIPO - Trade Marks',
+    'https://www.euipo.europa.eu/en/trade-marks'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trademark'
+  AND r.region_name = 'Europe';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Search for existing trade marks',
+    'EUIPO recommends checking whether the proposed mark is available and whether similar marks may conflict.',
+    'Search existing EU trade marks before filing.',
+    1,
+    'EUIPO - Before Applying',
+    'https://www.euipo.europa.eu/en/trade-marks/before-applying'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trademark'
+  AND r.region_name = 'Europe';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Define goods and services',
+    'An EU trade mark application must identify the goods and services for which protection is sought.',
+    'Prepare the appropriate goods and services specification before submitting the application.',
+    1,
+    'EUIPO - How to Apply',
+    'https://www.euipo.europa.eu/en/trade-marks/how-to-apply'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trademark'
+  AND r.region_name = 'Europe';
+
+
+-- ============================================================
+-- 14. EUROPE - TRADE SECRET
+-- ============================================================
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Identify confidential business information',
+    'Trade secrets can include confidential technical and commercial information that provides value because it is not generally known or readily accessible.',
+    'Identify software-related confidential information that provides commercial or technical value.',
+    1,
+    'EUIPO - Trade Secrets',
+    'https://www.euipo.europa.eu/news/trade-secrets-vital-intellectual-property-assets'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trade Secret'
+  AND r.region_name = 'Europe';
+
+
+INSERT INTO ip_requirements
+(
+    ip_type_id,
+    region_id,
+    requirement_title,
+    requirement_description,
+    action_required,
+    mandatory,
+    source_name,
+    source_url
+)
+SELECT
+    i.ip_type_id,
+    r.region_id,
+    'Apply confidentiality measures',
+    'Maintaining confidentiality is central to trade-secret protection.',
+    'Implement appropriate confidentiality agreements, access restrictions, security controls, and internal procedures.',
+    1,
+    'EUIPO - Trade Secrets',
+    'https://www.euipo.europa.eu/news/trade-secrets-vital-intellectual-property-assets'
+FROM ip_types i, regions r
+WHERE i.ip_type_name = 'Trade Secret'
+  AND r.region_name = 'Europe';
+
+
+-- ============================================================
+-- END OF IP REQUIREMENTS
+-- ============================================================
