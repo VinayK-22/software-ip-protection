@@ -1,611 +1,193 @@
 -- ============================================================
+-- PRUTVYP1
+-- Software Intellectual Property Protection System
+-- Database Schema - SQLite
+-- ============================================================
 
--- Software & Application IP Protection System
--- MySQL-Optimized Database Schema
+-- Enable foreign key enforcement
+PRAGMA foreign_keys = ON;
 
 
 -- ============================================================
+-- 1. USERS
+-- ============================================================
 
-CREATE DATABASE IF NOT EXISTS software_ip_protection
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-
-USE software_ip_protection;
+CREATE TABLE IF NOT EXISTS users (
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'user'
+        CHECK (role IN ('user', 'admin')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 
 -- ============================================================
--- 1. JURISDICTIONS
+-- 2. REGIONS
 -- ============================================================
 
-CREATE TABLE jurisdictions (
-    jurisdiction_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS regions (
+    region_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    region_name TEXT NOT NULL UNIQUE,
+    country_code TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-    jurisdiction_code VARCHAR(20) NOT NULL UNIQUE,
-    jurisdiction_name VARCHAR(100) NOT NULL,
-    jurisdiction_type ENUM('COUNTRY', 'REGION') NOT NULL,
 
+-- ============================================================
+-- 3. IP TYPES
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS ip_types (
+    ip_type_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip_type_name TEXT NOT NULL UNIQUE,
     description TEXT,
-
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 
 -- ============================================================
--- 2. IP CATEGORIES
+-- 4. APPLICATIONS
 -- ============================================================
 
-CREATE TABLE ip_categories (
-    category_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-    category_code VARCHAR(30) NOT NULL UNIQUE,
-    category_name VARCHAR(100) NOT NULL UNIQUE,
-
+CREATE TABLE IF NOT EXISTS applications (
+    application_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    application_name TEXT NOT NULL,
     description TEXT,
+    ip_type_id INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'draft'
+        CHECK (
+            status IN (
+                'draft',
+                'submitted',
+                'under_review',
+                'approved',
+                'rejected'
+            )
+        ),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
 
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- ============================================================
--- 3. IP AUTHORITIES
--- ============================================================
-
-CREATE TABLE authorities (
-    authority_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-    jurisdiction_id INT UNSIGNED NOT NULL,
-
-    authority_name VARCHAR(255) NOT NULL,
-    authority_abbreviation VARCHAR(50),
-
-    official_website VARCHAR(500),
-
-    description TEXT,
-
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_authority_jurisdiction
-        FOREIGN KEY (jurisdiction_id)
-        REFERENCES jurisdictions(jurisdiction_id)
+    FOREIGN KEY (ip_type_id)
+        REFERENCES ip_types(ip_type_id)
         ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT uq_authority_jurisdiction_name
-        UNIQUE (jurisdiction_id, authority_name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- ============================================================
--- 4. SOURCES
--- ============================================================
-
-CREATE TABLE sources (
-    source_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-    jurisdiction_id INT UNSIGNED NOT NULL,
-    authority_id INT UNSIGNED NULL,
-
-    source_title VARCHAR(500) NOT NULL,
-
-    source_type ENUM(
-        'LAW',
-        'RULE',
-        'GUIDELINE',
-        'MANUAL',
-        'OFFICIAL_WEBSITE',
-        'REGISTRATION_PORTAL',
-        'FORM',
-        'OTHER'
-    ) NOT NULL,
-
-    source_url VARCHAR(1000),
-
-    publication_date DATE,
-    last_reviewed_date DATE,
-
-    description TEXT,
-
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_source_jurisdiction
-        FOREIGN KEY (jurisdiction_id)
-        REFERENCES jurisdictions(jurisdiction_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_source_authority
-        FOREIGN KEY (authority_id)
-        REFERENCES authorities(authority_id)
-        ON DELETE SET NULL
         ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
 
 -- ============================================================
--- 5. REQUIREMENTS
+-- 5. IP REQUIREMENTS
 -- ============================================================
 
-CREATE TABLE requirements (
-    requirement_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS ip_requirements (
+    requirement_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip_type_id INTEGER NOT NULL,
+    requirement_title TEXT NOT NULL,
+    requirement_description TEXT NOT NULL,
+    mandatory INTEGER NOT NULL DEFAULT 1
+        CHECK (mandatory IN (0, 1)),
+    source_reference TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    jurisdiction_id INT UNSIGNED NOT NULL,
-    category_id INT UNSIGNED NOT NULL,
-    authority_id INT UNSIGNED NULL,
-
-    requirement_code VARCHAR(50) NOT NULL UNIQUE,
-    requirement_name VARCHAR(500) NOT NULL,
-
-    description TEXT,
-
-    requirement_type ENUM(
-        'ELIGIBILITY',
-        'REGISTRATION',
-        'DOCUMENT',
-        'PROCEDURE',
-        'OWNERSHIP',
-        'FILING',
-        'EXAMINATION',
-        'RENEWAL',
-        'OTHER'
-    ) NOT NULL DEFAULT 'OTHER',
-
-    applicability ENUM(
-        'MANDATORY',
-        'CONDITIONAL',
-        'OPTIONAL',
-        'INFORMATIONAL'
-    ) NOT NULL DEFAULT 'INFORMATIONAL',
-
-    priority ENUM(
-        'HIGH',
-        'MEDIUM',
-        'LOW'
-    ) NOT NULL DEFAULT 'MEDIUM',
-
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-
-    effective_from DATE,
-    effective_to DATE,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_requirement_jurisdiction
-        FOREIGN KEY (jurisdiction_id)
-        REFERENCES jurisdictions(jurisdiction_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_requirement_category
-        FOREIGN KEY (category_id)
-        REFERENCES ip_categories(category_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_requirement_authority
-        FOREIGN KEY (authority_id)
-        REFERENCES authorities(authority_id)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE,
-
-    CONSTRAINT chk_requirement_effective_dates
-        CHECK (effective_to IS NULL OR effective_from IS NULL OR effective_to >= effective_from)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- ============================================================
--- 6. REQUIREMENT SOURCES (M:N)
--- ============================================================
-
-CREATE TABLE requirement_sources (
-    requirement_id INT UNSIGNED NOT NULL,
-    source_id INT UNSIGNED NOT NULL,
-
-    PRIMARY KEY (requirement_id, source_id),
-
-    CONSTRAINT fk_requirement_source_requirement
-        FOREIGN KEY (requirement_id)
-        REFERENCES requirements(requirement_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_requirement_source_source
-        FOREIGN KEY (source_id)
-        REFERENCES sources(source_id)
+    FOREIGN KEY (ip_type_id)
+        REFERENCES ip_types(ip_type_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
 
 -- ============================================================
--- 7. DOCUMENT TYPES
+-- 6. APPLICATION REQUIREMENTS
 -- ============================================================
 
-CREATE TABLE document_types (
-    document_type_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-    document_code VARCHAR(50) NOT NULL UNIQUE,
-    document_name VARCHAR(255) NOT NULL UNIQUE,
-
-    description TEXT,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- ============================================================
--- 8. REQUIREMENT DOCUMENTS
--- ============================================================
-
-CREATE TABLE requirement_documents (
-    requirement_id INT UNSIGNED NOT NULL,
-    document_type_id INT UNSIGNED NOT NULL,
-
-    is_mandatory BOOLEAN NOT NULL DEFAULT FALSE,
-
-    description TEXT,
-
-    PRIMARY KEY (requirement_id, document_type_id),
-
-    CONSTRAINT fk_requirement_document_requirement
-        FOREIGN KEY (requirement_id)
-        REFERENCES requirements(requirement_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_requirement_document_type
-        FOREIGN KEY (document_type_id)
-        REFERENCES document_types(document_type_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- ============================================================
--- 9. SOFTWARE PROJECTS
--- ============================================================
-
-CREATE TABLE software_projects (
-    project_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-    project_name VARCHAR(255) NOT NULL,
-    project_description TEXT,
-
-    software_type ENUM(
-        'WEB_APPLICATION',
-        'MOBILE_APPLICATION',
-        'DESKTOP_APPLICATION',
-        'SAAS',
-        'API',
-        'AI_APPLICATION',
-        'SOFTWARE_LIBRARY',
-        'OTHER'
-    ) NOT NULL DEFAULT 'OTHER',
-
-    development_stage ENUM(
-        'IDEA',
-        'PROTOTYPE',
-        'DEVELOPMENT',
-        'TESTING',
-        'PRODUCTION'
-    ) NOT NULL DEFAULT 'IDEA',
-
-    organization_name VARCHAR(255),
-    created_by VARCHAR(255),
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- ============================================================
--- 10. PROJECT JURISDICTIONS
--- ============================================================
-
-CREATE TABLE project_jurisdictions (
-    project_id INT UNSIGNED NOT NULL,
-    jurisdiction_id INT UNSIGNED NOT NULL,
-
-    PRIMARY KEY (project_id, jurisdiction_id),
-
-    CONSTRAINT fk_project_jurisdiction_project
-        FOREIGN KEY (project_id)
-        REFERENCES software_projects(project_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_project_jurisdiction_jurisdiction
-        FOREIGN KEY (jurisdiction_id)
-        REFERENCES jurisdictions(jurisdiction_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- ============================================================
--- 11. PROJECT IP CATEGORIES
--- ============================================================
-
-CREATE TABLE project_ip_categories (
-    project_id INT UNSIGNED NOT NULL,
-    category_id INT UNSIGNED NOT NULL,
-
-    PRIMARY KEY (project_id, category_id),
-
-    CONSTRAINT fk_project_category_project
-        FOREIGN KEY (project_id)
-        REFERENCES software_projects(project_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_project_category_category
-        FOREIGN KEY (category_id)
-        REFERENCES ip_categories(category_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- ============================================================
--- 12. PROJECT REQUIREMENTS
--- ============================================================
-
-CREATE TABLE project_requirements (
-    project_requirement_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-    project_id INT UNSIGNED NOT NULL,
-    requirement_id INT UNSIGNED NOT NULL,
-
-    status ENUM(
-        'NOT_STARTED',
-        'IN_PROGRESS',
-        'COMPLETED',
-        'NOT_APPLICABLE'
-    ) NOT NULL DEFAULT 'NOT_STARTED',
-
-    response TEXT,
+CREATE TABLE IF NOT EXISTS application_requirements (
+    application_requirement_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    application_id INTEGER NOT NULL,
+    requirement_id INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending'
+        CHECK (
+            status IN (
+                'pending',
+                'completed',
+                'not_applicable'
+            )
+        ),
     notes TEXT,
+    completed_at TEXT,
 
-    reviewed_by VARCHAR(255),
-    reviewed_at DATETIME,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
-
-    CONSTRAINT uq_project_requirement
-        UNIQUE (project_id, requirement_id),
-
-    CONSTRAINT fk_project_requirement_project
-        FOREIGN KEY (project_id)
-        REFERENCES software_projects(project_id)
+    FOREIGN KEY (application_id)
+        REFERENCES applications(application_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
 
-    CONSTRAINT fk_project_requirement_requirement
-        FOREIGN KEY (requirement_id)
-        REFERENCES requirements(requirement_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- ============================================================
--- 13. PROJECT DOCUMENTS
--- ============================================================
-
-CREATE TABLE project_documents (
-    project_document_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-    project_id INT UNSIGNED NOT NULL,
-    document_type_id INT UNSIGNED NULL,
-
-    document_name VARCHAR(500) NOT NULL,
-    file_path VARCHAR(1000),
-
-    document_status ENUM(
-        'UPLOADED',
-        'PENDING',
-        'VERIFIED',
-        'REJECTED'
-    ) NOT NULL DEFAULT 'PENDING',
-
-    notes TEXT,
-
-    uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_project_document_project
-        FOREIGN KEY (project_id)
-        REFERENCES software_projects(project_id)
+    FOREIGN KEY (requirement_id)
+        REFERENCES ip_requirements(requirement_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
 
-    CONSTRAINT fk_project_document_type
-        FOREIGN KEY (document_type_id)
-        REFERENCES document_types(document_type_id)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    UNIQUE (application_id, requirement_id)
+);
+
+
+-- ============================================================
+-- 7. APPLICATION REGIONS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS application_regions (
+    application_region_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    application_id INTEGER NOT NULL,
+    region_id INTEGER NOT NULL,
+
+    FOREIGN KEY (application_id)
+        REFERENCES applications(application_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (region_id)
+        REFERENCES regions(region_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    UNIQUE (application_id, region_id)
+);
 
 
 -- ============================================================
 -- INDEXES
--- Only non-redundant indexes: InnoDB auto-indexes single FK
--- columns (and unique-key leftmost prefixes) on its own, so
--- those are intentionally NOT recreated here.
 -- ============================================================
 
--- Composite: filter requirements by jurisdiction + category
--- (also serves as the FK index for jurisdiction_id)
-CREATE INDEX idx_requirements_jurisdiction_category
-    ON requirements(jurisdiction_id, category_id);
+CREATE INDEX IF NOT EXISTS idx_applications_user
+ON applications(user_id);
 
-CREATE INDEX idx_requirements_type
-    ON requirements(requirement_type);
+CREATE INDEX IF NOT EXISTS idx_applications_ip_type
+ON applications(ip_type_id);
 
-CREATE INDEX idx_requirements_applicability
-    ON requirements(applicability);
+CREATE INDEX IF NOT EXISTS idx_applications_status
+ON applications(status);
 
--- Composite: filter sources by jurisdiction + type
--- (also serves as the FK index for jurisdiction_id)
-CREATE INDEX idx_sources_jurisdiction_type
-    ON sources(jurisdiction_id, source_type);
+CREATE INDEX IF NOT EXISTS idx_ip_requirements_ip_type
+ON ip_requirements(ip_type_id);
 
--- Composite: "requirements pending/in-progress for project X"
--- (also serves as the FK index for project_id)
-CREATE INDEX idx_project_requirements_project_status
-    ON project_requirements(project_id, status);
+CREATE INDEX IF NOT EXISTS idx_application_requirements_application
+ON application_requirements(application_id);
 
+CREATE INDEX IF NOT EXISTS idx_application_requirements_requirement
+ON application_requirements(requirement_id);
 
--- ============================================================
--- INITIAL JURISDICTIONS
--- ============================================================
+CREATE INDEX IF NOT EXISTS idx_application_regions_application
+ON application_regions(application_id);
 
-INSERT INTO jurisdictions (
-    jurisdiction_code,
-    jurisdiction_name,
-    jurisdiction_type,
-    description
-)
-VALUES
-(
-    'IN',
-    'India',
-    'COUNTRY',
-    'Indian intellectual property jurisdiction.'
-),
-(
-    'US',
-    'United States',
-    'COUNTRY',
-    'United States intellectual property jurisdiction.'
-),
-(
-    'EU',
-    'European Union',
-    'REGION',
-    'European Union intellectual property framework.'
-);
+CREATE INDEX IF NOT EXISTS idx_application_regions_region
+ON application_regions(region_id);
 
 
 -- ============================================================
--- INITIAL IP CATEGORIES
--- ============================================================
-
-INSERT INTO ip_categories (
-    category_code,
-    category_name,
-    description
-)
-VALUES
-(
-    'COPYRIGHT',
-    'Copyright',
-    'Protection of original software code, documentation and related works.'
-),
-(
-    'PATENT',
-    'Patent',
-    'Protection for eligible inventions and computer-implemented inventions.'
-),
-(
-    'TRADEMARK',
-    'Trademark',
-    'Protection of names, logos and other identifiers.'
-),
-(
-    'DESIGN',
-    'Design',
-    'Protection of eligible visual or industrial design aspects.'
-),
-(
-    'TRADE_SECRET',
-    'Trade Secret',
-    'Protection of confidential and commercially valuable information.'
-),
-(
-    'OWNERSHIP',
-    'Ownership',
-    'Information relating to ownership, assignment and licensing.'
-);
-
-
--- ============================================================
--- INITIAL DOCUMENT TYPES
--- ============================================================
-
-INSERT INTO document_types (
-    document_code,
-    document_name,
-    description
-)
-VALUES
-(
-    'SOURCE_CODE',
-    'Source Code',
-    'Source code associated with the software.'
-),
-(
-    'OBJECT_CODE',
-    'Object Code',
-    'Compiled software code where applicable.'
-),
-(
-    'OWNERSHIP_PROOF',
-    'Ownership Proof',
-    'Document establishing ownership of the software or IP.'
-),
-(
-    'ASSIGNMENT_AGREEMENT',
-    'Assignment Agreement',
-    'Agreement transferring IP rights.'
-),
-(
-    'EMPLOYMENT_AGREEMENT',
-    'Employment Agreement',
-    'Employment agreement relevant to IP ownership.'
-),
-(
-    'LICENSE_AGREEMENT',
-    'License Agreement',
-    'Agreement granting rights to use or exploit IP.'
-),
-(
-    'SOFTWARE_DESCRIPTION',
-    'Software Description',
-    'Description of the software and its functionality.'
-),
-(
-    'USER_MANUAL',
-    'User Manual',
-    'Documentation for using the software.'
-),
-(
-    'APPLICATION_FORM',
-    'Application Form',
-    'Official IP application or registration form.'
-),
-(
-    'OTHER',
-    'Other',
-    'Other supporting document.'
-);
-
-
--- ============================================================
--- END OF PRUTVYP1 SCHEMA (MYSQL-OPTIMIZED)
+-- END OF SCHEMA
 -- ============================================================
