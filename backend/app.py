@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 
 from config import APP_NAME, APP_VERSION
-
+from database import Base, engine
+from models import User, Application, Region, IPType, Requirement, Assessment
 
 # Create the FastAPI application
 app = FastAPI(
