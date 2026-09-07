@@ -1,0 +1,14 @@
+# Web framework
+fastapi
+
+# Server for running FastAPI
+uvicorn[standard]
+
+# Database ORM
+sqlalchemy
+
+# Data validation
+pydantic
+
+# Environment variables
+python-dotenv
