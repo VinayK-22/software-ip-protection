@@ -9,6 +9,7 @@ sqlalchemy
 
 # Data validation
 pydantic
+email-validator
 
 # Environment variables
 python-dotenv

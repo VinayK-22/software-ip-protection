@@ -31,5 +31,3 @@ def get_db():
         yield db
     finally:
         db.close()
-        
-from models import User, Application, Region, IPType, Requirement, Assessment
