@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Text
 
 from database import Base
 
@@ -6,6 +6,17 @@ from database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False)
-    email = Column(String(150), unique=True, nullable=False, index=True)
+    user_id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(Text, nullable=False)
+    email = Column(Text, unique=True, nullable=False)
+    password_hash = Column(Text, nullable=False)
+    role = Column(
+        Text,
+        nullable=False,
+        default="user"
+    )
+    created_at = Column(
+        Text,
+        nullable=False,
+        server_default="CURRENT_TIMESTAMP"
+    )

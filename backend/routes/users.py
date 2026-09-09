@@ -18,8 +18,9 @@ def create_user(
     db: Session = Depends(get_db)
 ):
     user = User(
-        name=user_data.name,
-        email=user_data.email
+        full_name=user_data.full_name,
+        email=user_data.email,
+        password_hash=user_data.password_hash
     )
 
     db.add(user)
@@ -40,7 +41,7 @@ def read_user(
     db: Session = Depends(get_db)
 ):
     user = db.query(User).filter(
-        User.id == user_id
+        User.user_id == user_id
     ).first()
 
     if not user:
