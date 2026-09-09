@@ -1,133 +1,73 @@
 # Software IP Protection
 
-A platform for assessing software and application intellectual property protection requirements across India, the United States, and Europe.
+A web-based system for assessing intellectual property protection requirements for software applications across India, the United States, and Europe.
 
-## Overview
+## About the Project
 
-The **Software IP Protection System** is a web-based platform designed to organize, manage, and analyze intellectual property (IP) protection requirements associated with software applications.
+Software applications can contain different types of intellectual property such as source code, algorithms, software architecture, documentation, databases, product names, logos, and other original work.
 
-Software products can contain different forms of intellectual property, including:
+Determining which forms of IP protection may apply to a software product can become difficult when the information is maintained manually, especially when requirements differ between jurisdictions.
 
-* Source code
-* Software architecture
-* Documentation
-* Algorithms
-* Databases
-* Product names
-* Logos
-* Other original software assets
+This project aims to provide a structured way to record software application information, maintain IP requirements, and identify the protections and requirements that may apply to an application based on its characteristics and selected jurisdiction.
 
-Identifying the appropriate protection requirements across different jurisdictions can be complex when handled manually.
-
-This project provides a structured platform for capturing software application information, maintaining jurisdiction-specific IP requirements, and identifying relevant protection requirements through a centralized system.
-
-The initial implementation focuses on **India, the United States, and Europe**, with an architecture that can be extended to additional jurisdictions.
-
----
+The initial version covers **India, the United States, and Europe**, with the database designed so that additional jurisdictions can be added later.
 
 ## Objectives
 
-* Develop a centralized system for managing software-related IP requirements.
-* Store jurisdiction-specific IP information in a structured database.
-* Capture relevant information about software applications and their intellectual property.
-* Identify applicable IP protection requirements based on application characteristics and jurisdiction.
-* Provide a backend API for processing application and IP-related data.
-* Develop a maintainable and extensible software architecture.
-* Provide a simple interface for users to understand applicable IP requirements.
+* Maintain software application and IP-related information in one system.
+* Store IP requirements based on jurisdiction.
+* Record different types of intellectual property associated with an application.
+* Identify relevant IP protection requirements for an application.
+* Provide APIs for managing application and IP requirement data.
+* Build the system using a modular backend structure that can be extended later.
+* Provide a simple interface for users to view the resulting requirements.
 
----
+## Main Features
 
-## Core Features
+### Application Management
 
-### 1. Application Information Management
+Users can enter and maintain information about their software applications, including the application name, description, status, and related IP information.
 
-Capture structured information about a software application, its components, and associated intellectual property.
+### IP Type Management
 
-### 2. IP Requirement Management
+The system maintains different IP protection types that may be relevant to software applications, such as:
 
-Store and manage intellectual property protection requirements using a structured relational data model.
+* Copyright
+* Patent
+* Trademark
+* Trade Secret
+* Open Source
 
-### 3. Jurisdiction-Based Requirements
+### Jurisdiction-Based Requirements
 
-Associate IP requirements with specific countries or regions to support jurisdiction-specific analysis.
+IP requirements are stored against specific jurisdictions so that the system can distinguish requirements for India, the United States, and Europe.
 
-### 4. Requirement Matching
+### Requirement Matching
 
-Analyze application information and map relevant characteristics to applicable IP protection requirements.
+Application information is used to determine which IP requirements are relevant to the selected jurisdiction and application characteristics.
 
-### 5. Database Management
+### Requirement Tracking
 
-Maintain structured IP requirement data using **SQLite**, providing a lightweight and self-contained database environment.
+The system is intended to help identify requirements that have been completed, are still pending, or require further action.
 
-### 6. Web-Based Interface
+### Database
 
-Provide a user-friendly interface for entering application information and viewing applicable IP requirements.
+SQLite is used for the initial implementation. It keeps the project simple to set up and does not require a separate database server.
 
----
+### Web Interface
+
+A web interface will allow users to enter application information and view the IP requirements identified by the system.
 
 ## Technology Stack
 
-| Component            | Technology            |
-| -------------------- | --------------------- |
-| Programming Language | Python                |
-| Backend Framework    | FastAPI               |
-| Database             | SQLite                |
-| Database Language    | SQL                   |
-| Frontend             | HTML, CSS, JavaScript |
-| Version Control      | Git, GitHub           |
-
----
-
-## System Architecture
-
-```text
-                         User
-                           |
-                           v
-                  Web Application
-                           |
-                           v
-                     Backend API
-                           |
-                           v
-                  Application Logic
-                           |
-                 +---------+---------+
-                 |                   |
-                 v                   v
-          Application Data    IP Requirements
-                                     |
-                                     v
-                              SQLite Database
-                                     |
-                                     v
-                             Jurisdiction Data
-```
-
----
-
-## Application Workflow
-
-```text
-1. User provides software/application information
-                         |
-                         v
-2. Backend validates and processes the information
-                         |
-                         v
-3. System identifies relevant application characteristics
-                         |
-                         v
-4. Database is queried for applicable IP requirements
-                         |
-                         v
-5. Requirements are matched with the application
-                         |
-                         v
-6. Results are presented to the user
-```
-
----
+| Component         | Technology            |
+| ----------------- | --------------------- |
+| Language          | Python                |
+| Backend           | FastAPI               |
+| Database          | SQLite                |
+| Database Language | SQL                   |
+| Frontend          | HTML, CSS, JavaScript |
+| Version Control   | Git, GitHub           |
 
 ## Project Structure
 
@@ -156,23 +96,20 @@ software-ip-protection/
 └── docs/
 ```
 
----
-
 ## Database
 
-The project uses **SQLite** as its database engine.
+The project currently uses SQLite for storing application and IP requirement data.
 
-SQLite was selected for the initial implementation because it provides a lightweight database environment without requiring a separate database server or database service.
+The database contains information related to:
 
-The database is designed to maintain structured information related to:
-
-* Jurisdictions
-* IP protection categories
+* Users
 * Software applications
-* Application characteristics
+* IP types
+* Jurisdictions
 * IP requirements
-* Jurisdiction-specific requirements
-* Requirement relationships
+* Application-to-IP-type relationships
+* Application-to-jurisdiction relationships
+* Application requirement status
 
 ### Database Files
 
@@ -183,134 +120,94 @@ database/
 └── ip_protection.db
 ```
 
-### Database File Description
+`schema.sql` contains the database tables, relationships, constraints, and indexes.
 
-**`schema.sql`**
+`ip_requirements.sql` contains the initial IP requirement data used by the system.
 
-Defines the database structure, tables, constraints, and relationships.
+`ip_protection.db` is the SQLite database used during development.
 
-**`ip_requirements.sql`**
+## Jurisdictions
 
-Contains the initial jurisdiction-specific IP requirement data.
-
-**`ip_protection.db`**
-
-SQLite database used by the application.
-
----
-
-## Target Jurisdictions
-
-The initial implementation focuses on:
+The initial version supports:
 
 * India
 * United States
 * Europe
 
-The database architecture is designed to support additional jurisdictions as the project develops.
+The database structure allows additional jurisdictions to be added in the future.
 
----
+## Application Flow
 
-## Getting Started
+The basic application flow is:
 
-### Prerequisites
-
-Make sure the following are installed:
-
-* Python 3.10+
-* SQLite 3+
-* Git
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/YOUR-USERNAME/software-ip-protection.git
-cd software-ip-protection
+```text
+User
+  |
+  v
+Enter Application Information
+  |
+  v
+Select Jurisdiction
+  |
+  v
+Identify Application Characteristics
+  |
+  v
+Check IP Requirements
+  |
+  v
+Match Applicable Requirements
+  |
+  v
+Display Results
 ```
 
-### Create a Virtual Environment
+The assessment will help show which requirements are applicable and which areas may require further action.
 
-#### Windows
+## Backend
 
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
+The backend is being developed using FastAPI.
 
-#### Linux / macOS
+The API is responsible for:
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### Initialize the Database
-
-Open SQLite:
-
-```bash
-sqlite3 database/ip_protection.db
-```
-
-Run the database schema:
-
-```sql
-.read database/schema.sql
-```
-
-Load the initial IP requirements:
-
-```sql
-.read database/ip_requirements.sql
-```
-
-Exit SQLite:
-
-```sql
-.exit
-```
-
-### Run the Application
-
-```bash
-python backend/main.py
-```
-
----
+* Managing users
+* Managing software applications
+* Managing jurisdictions
+* Managing IP types
+* Managing IP requirements
+* Processing application-related data
+* Performing requirement matching
+* Providing assessment results
 
 ## Development Roadmap
 
 ### Phase 1 — Database
 
 * Define project requirements
-* Design database architecture
-* Define database schema
-* Implement SQLite database
-* Populate IP requirement data
-* Validate database relationships
+* Design database structure
+* Create SQLite database
+* Create tables and relationships
+* Add initial IP requirement data
+* Verify database relationships
 
 ### Phase 2 — Backend
 
-* Implement FastAPI application
-* Connect backend with SQLite
-* Implement application management APIs
-* Implement IP requirement APIs
-* Implement requirement-matching logic
-* Implement validation and error handling
+* Set up FastAPI
+* Connect SQLite with the backend
+* Create SQLAlchemy models
+* Create Pydantic schemas
+* Develop application APIs
+* Develop IP requirement APIs
+* Implement requirement matching
+* Add validation and error handling
 
 ### Phase 3 — Frontend
 
-* Develop application information form
-* Connect frontend with backend APIs
-* Develop IP requirement results interface
-* Implement user input validation
-* Improve user experience
+* Create application information form
+* Connect the frontend to the backend
+* Display applicable IP requirements
+* Display missing or pending requirements
+* Add basic input validation
 
 ### Phase 4 — Testing and Deployment
 
@@ -318,33 +215,23 @@ python backend/main.py
 * API testing
 * Database testing
 * Security review
-* Performance optimization
+* Performance improvements
 * Documentation
 * Deployment
 
----
-
-## Project Scope
-
-The project focuses on developing a technical platform for organizing and analyzing software-related intellectual property requirements.
-
-The system is intended to provide structured information and workflow assistance. It does **not** replace qualified legal advice or professional intellectual property consultation.
-
----
-
-## Project Status
+## Current Status
 
 **Status: In Development**
 
-The current development focus is on:
+The project is currently focused on completing the database and backend implementation.
 
-* Establishing the database structure
-* Populating jurisdiction-specific IP requirements
-* Connecting the SQLite database with the FastAPI backend
-* Developing application and assessment APIs
-* Building the frontend interface
+The SQLite database structure and initial IP requirement data have been created. The next stage is to connect the existing database with the FastAPI backend and build the application and assessment modules.
 
----
+## Project Scope
+
+This project is focused on providing a technical system for organizing software-related intellectual property information and requirements.
+
+The information provided by the system is intended for technical and workflow assistance and does not replace advice from a qualified intellectual property professional or lawyer.
 
 ## Author
 
@@ -360,10 +247,6 @@ Bachelor of Engineering in Information Science and Engineering
 * SQL
 * Open Source Development
 
----
-
 ## License
 
-This project is currently under development.
-
-Licensing information will be added as the project matures.
+This project is currently under development. Licensing information will be added in a future version.
