@@ -1,13 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from database import get_db
+from models.application import Application
 from schemas.application_schema import ApplicationCreate, ApplicationResponse
-from services.application_service import (
-    create_application,
-    get_application,
-    get_applications
-)
 
 
 router = APIRouter(
@@ -17,29 +13,23 @@ router = APIRouter(
 
 
 @router.post("/", response_model=ApplicationResponse)
-def create_new_application(
-    application_data: ApplicationCreate,
+def create_application(
+    application: ApplicationCreate,
     db: Session = Depends(get_db)
 ):
-    return create_application(db, application_data)
+    new_application = Application(
+        user_id=application.user_id,
+        application_name=application.application_name,
+        description=application.description
+    )
+
+    db.add(new_application)
+    db.commit()
+    db.refresh(new_application)
+
+    return new_application
 
 
 @router.get("/", response_model=list[ApplicationResponse])
-def read_applications(db: Session = Depends(get_db)):
-    return get_applications(db)
-
-
-@router.get("/{application_id}", response_model=ApplicationResponse)
-def read_application(
-    application_id: int,
-    db: Session = Depends(get_db)
-):
-    application = get_application(db, application_id)
-
-    if not application:
-        raise HTTPException(
-            status_code=404,
-            detail="Application not found"
-        )
-
-    return application
+def get_applications(db: Session = Depends(get_db)):
+    return db.query(Application).all()  

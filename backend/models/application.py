@@ -6,26 +6,16 @@ from database import Base
 class Application(Base):
     __tablename__ = "applications"
 
-    id = Column(Integer, primary_key=True, index=True)
+    application_id = Column(Integer, primary_key=True, index=True)
 
-    name = Column(
-        String(200),
-        nullable=False
-    )
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
 
-    description = Column(
-        Text,
-        nullable=True
-    )
+    application_name = Column(String, nullable=False)
 
-    owner_id = Column(
-        Integer,
-        ForeignKey("users.id"),
-        nullable=False
-    )
+    description = Column(Text, nullable=True)
 
-    status = Column(
-        String(50),
-        nullable=False,
-        default="draft"
-    )
+    status = Column(String, nullable=False, default="draft")
+
+    created_at = Column(String, nullable=False)
+
+    updated_at = Column(String, nullable=False)

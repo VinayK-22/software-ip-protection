@@ -14,38 +14,31 @@ router = APIRouter(
 
 @router.post("/", response_model=RegionResponse)
 def create_region(
-    region_data: RegionCreate,
+    region: RegionCreate,
     db: Session = Depends(get_db)
 ):
-    region = Region(
-        name=region_data.name
+    existing_region = db.query(Region).filter(
+        Region.region_name == region.region_name
+    ).first()
+
+    if existing_region:
+        raise HTTPException(
+            status_code=409,
+            detail="Region already exists"
+        )
+
+    new_region = Region(
+        region_name=region.region_name,
+        country_code=region.country_code
     )
 
-    db.add(region)
+    db.add(new_region)
     db.commit()
-    db.refresh(region)
+    db.refresh(new_region)
 
-    return region
+    return new_region
 
 
 @router.get("/", response_model=list[RegionResponse])
-def read_regions(db: Session = Depends(get_db)):
+def get_regions(db: Session = Depends(get_db)):
     return db.query(Region).all()
-
-
-@router.get("/{region_id}", response_model=RegionResponse)
-def read_region(
-    region_id: int,
-    db: Session = Depends(get_db)
-):
-    region = db.query(Region).filter(
-        Region.id == region_id
-    ).first()
-
-    if not region:
-        raise HTTPException(
-            status_code=404,
-            detail="Region not found"
-        )
-
-    return region

@@ -1,19 +1,21 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class ApplicationCreate(BaseModel):
-    name: str
-    description: str | None = None
-    owner_id: int
-    status: str = "draft"
+    user_id: int
+    application_name: str
+    description: Optional[str] = None
 
 
 class ApplicationResponse(BaseModel):
-    id: int
-    name: str
-    description: str | None
-    owner_id: int
+    application_id: int
+    user_id: int
+    application_name: str
+    description: Optional[str]
     status: str
+    created_at: str
+    updated_at: str
 
     class Config:
         from_attributes = True
