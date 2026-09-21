@@ -50,15 +50,7 @@ def get_requirements_by_region(
 
     return requirements
 
-@router.get("/", response_model=list[RequirementResponse])
-def get_requirements(db: Session = Depends(get_db)):
 
-    requirements = db.query(Requirement).all()
-
-    print("API REQUIREMENT COUNT:", len(requirements))
-    print("FIRST ID:", requirements[0].requirement_id if requirements else "NO DATA")
-
-    return requirements
 
 
 @router.post("/", response_model=RequirementResponse)
