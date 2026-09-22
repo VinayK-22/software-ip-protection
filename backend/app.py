@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from routes.users import router as user_router
 from routes.requirements import router as requirement_router
 from routes.assessment import router as assessment_router
+from routes.gap_analysis import router as gap_analysis_router
 
 
 app = FastAPI(
@@ -13,6 +14,7 @@ app = FastAPI(
 app.include_router(user_router)
 app.include_router(requirement_router)
 app.include_router(assessment_router)
+app.include_router(gap_analysis_router)
 
 
 @app.get("/")
