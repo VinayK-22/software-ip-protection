@@ -36,13 +36,7 @@ def get_assessments(db):
     return db.query(Assessment).all()
 
 
-def update_assessment(
-    db,
-    assessment_id,
-    status,
-    is_compliant,
-    notes
-):
+def update_assessment(db, assessment_id, assessment_data):
     """
     Update an existing IP protection assessment.
     """
@@ -53,9 +47,9 @@ def update_assessment(
     if not assessment:
         return None
 
-    assessment.status = status
-    assessment.is_compliant = is_compliant
-    assessment.notes = notes
+    assessment.status = assessment_data.status
+    assessment.is_compliant = assessment_data.is_compliant
+    assessment.notes = assessment_data.notes
 
     db.commit()
     db.refresh(assessment)

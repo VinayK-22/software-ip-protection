@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas.assessment_schema import (
     AssessmentCreate,
+    AssessmentUpdate,
     AssessmentResponse
 )
 from services.assessment_service import (
@@ -29,7 +30,9 @@ def create_new_assessment(
 
 
 @router.get("/", response_model=list[AssessmentResponse])
-def read_assessments(db: Session = Depends(get_db)):
+def read_assessments(
+    db: Session = Depends(get_db)
+):
     return get_assessments(db)
 
 
@@ -52,17 +55,13 @@ def read_assessment(
 @router.put("/{assessment_id}", response_model=AssessmentResponse)
 def update_existing_assessment(
     assessment_id: int,
-    status: str,
-    missing_requirements: list[str],
-    recommendations: list[str],
+    assessment_data: AssessmentUpdate,
     db: Session = Depends(get_db)
 ):
     assessment = update_assessment(
         db,
         assessment_id,
-        status,
-        missing_requirements,
-        recommendations
+        assessment_data
     )
 
     if not assessment:

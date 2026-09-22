@@ -16,7 +16,7 @@ class Assessment(Base):
 
     requirement_id = Column(
         Integer,
-        ForeignKey("requirements.id"),
+        ForeignKey("ip_requirements.requirement_id"),
         nullable=False
     )
 
