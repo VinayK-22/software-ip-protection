@@ -10,7 +10,7 @@ class Assessment(Base):
 
     application_id = Column(
         Integer,
-        ForeignKey("applications.id"),
+        ForeignKey("applications.application_id"),
         nullable=False
     )
 
